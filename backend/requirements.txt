@@ -1,0 +1,26 @@
+# AI Pre-Interview Backend Dependencies
+
+# Web Framework
+fastapi
+uvicorn[standard]
+python-multipart
+
+# Configuration Management
+pydantic
+pydantic-settings
+python-dotenv
+
+# HTTP Client
+httpx
+aiohttp
+
+# AI/LLM - Aliyun DashScope SDK
+dashscope
+
+# Utilities
+python-jose[cryptography]
+passlib[bcrypt]
+
+# Development Tools
+pytest
+pytest-asyncio
