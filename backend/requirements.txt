@@ -4,6 +4,7 @@
 fastapi
 uvicorn[standard]
 python-multipart
+watchfiles  # Required for --reload on Windows/Docker
 
 # Configuration Management
 pydantic

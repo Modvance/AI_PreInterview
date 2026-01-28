@@ -1,5 +1,7 @@
+version: '3.8'
+
 services:
-  # 后端服务
+  # 后端服务 - 开发模式（热重载）
   backend:
     build:
       context: ./backend
@@ -8,30 +10,50 @@ services:
     ports:
       - "8000:8000"
     environment:
-      - APP_ENV=production
-      - DEBUG=false
+      - APP_ENV=development
+      - DEBUG=true
     env_file:
       - ./backend/.env
     volumes:
-      - ./backend/data:/app/data
+      # 挂载代码目录，实现热重载
+      - ./backend/app:/app/app:rw
+      - ./backend/data:/app/data:rw
+      # 挂载.env文件，方便修改配置
+      - ./backend/.env:/app/.env:ro
     restart: unless-stopped
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload --reload-dir /app/app --reload-include "*.py" --reload-exclude "*.pyc"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 30s
       timeout: 10s
       retries: 3
 
-  # 前端服务
+  # 前端服务 - 开发模式（热重载）
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
     container_name: ai-preinterview-frontend
     ports:
-      - "80:80"
+      - "5173:5173"
+    environment:
+      - NODE_ENV=development
+      - VITE_API_URL=http://backend:8000
+    volumes:
+      # 挂载源代码目录，实现热重载
+      - ./frontend/src:/app/src:rw
+      - ./frontend/public:/app/public:ro
+      - ./frontend/index.html:/app/index.html:ro
+      - ./frontend/vite.config.js:/app/vite.config.js:ro
+      - ./frontend/tailwind.config.js:/app/tailwind.config.js:ro
+      - ./frontend/postcss.config.js:/app/postcss.config.js:ro
+      - ./frontend/package.json:/app/package.json:ro
+      # 排除node_modules，使用容器内的
+      - /app/node_modules
     depends_on:
       - backend
     restart: unless-stopped
+    command: npm run dev -- --host 0.0.0.0
 
 # 网络配置
 networks:

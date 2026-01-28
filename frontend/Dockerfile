@@ -1,5 +1,5 @@
-# 前端 Dockerfile - 构建阶段
-FROM node:20-alpine as build
+# 前端 Dockerfile - 开发模式
+FROM node:20-alpine
 
 WORKDIR /app
 
@@ -9,22 +9,9 @@ COPY package*.json ./
 # 安装依赖
 RUN npm install
 
-# 复制源代码
-COPY . .
+# 暴露端口（Vite开发服务器）
+EXPOSE 5173
 
-# 构建
-RUN npm run build
-
-# 生产阶段
-FROM nginx:alpine
-
-# 复制nginx配置
-COPY nginx.conf /etc/nginx/conf.d/default.conf
-
-# 复制构建产物
-COPY --from=build /app/dist /usr/share/nginx/html
-
-# 暴露端口
-EXPOSE 80
-
-CMD ["nginx", "-g", "daemon off;"]
+# 开发模式：使用vite dev server实现热重载
+# 源代码通过volume挂载，不需要COPY
+CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]

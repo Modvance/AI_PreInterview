@@ -84,18 +84,51 @@ npm run dev
 
 访问 http://localhost:5173 即可使用。
 
-### Docker部署
+### Docker部署（开发模式 - 热重载）
 
 ```bash
-# 构建并启动服务
-docker-compose up -d
+# 1. 确保已配置环境变量
+cp backend/.env.example backend/.env
+# 编辑 backend/.env 文件，填入必要的配置
 
-# 查看日志
+# 2. 首次启动（需要构建镜像）
+docker-compose up --build
+
+# 或者后台运行
+docker-compose up -d --build
+
+# 3. 查看日志（重要：可以看到热重载是否生效）
 docker-compose logs -f
 
-# 停止服务
+# 查看特定服务日志
+docker-compose logs -f backend
+docker-compose logs -f frontend
+
+# 4. 如果修改代码后没有自动重载，重启服务
+docker-compose restart backend   # 重启后端
+docker-compose restart frontend  # 重启前端
+
+# 5. 停止服务
 docker-compose down
 ```
+
+**开发模式特性：**
+- ✅ **热重载**：修改代码后自动重新加载，无需重启容器
+- ✅ **代码挂载**：源代码通过volume挂载，修改即时生效
+- ✅ **实时调试**：后端使用 `--reload`，前端使用 Vite HMR
+
+**热重载说明：**
+- **后端**：修改 `backend/app/**/*.py` 文件后，uvicorn 会自动检测并重新加载
+- **前端**：修改 `frontend/src/**/*.vue` 或 `*.js` 文件后，Vite HMR 会自动更新浏览器
+- **如果热重载不工作**：
+  1. 检查日志：`docker-compose logs -f` 查看是否有错误
+  2. 重启服务：`docker-compose restart backend` 或 `docker-compose restart frontend`
+  3. 检查挂载：`docker exec ai-preinterview-backend ls /app/app` 确认文件存在
+
+**访问地址：**
+- 前端：http://localhost:5173
+- 后端API：http://localhost:8000
+- API文档：http://localhost:8000/docs
 
 ## Configuration
 

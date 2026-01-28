@@ -1,4 +1,4 @@
-# 后端 Dockerfile
+# 后端 Dockerfile - 开发模式
 FROM python:3.11-slim
 
 WORKDIR /app
@@ -14,14 +14,12 @@ COPY requirements.txt .
 # 安装Python依赖
 RUN pip install --no-cache-dir -r requirements.txt
 
-# 复制应用代码
-COPY . .
-
 # 创建数据目录
 RUN mkdir -p /app/data
 
 # 暴露端口
 EXPOSE 8000
 
-# 启动命令
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# 开发模式：使用--reload参数实现热重载
+# 代码通过volume挂载，不需要COPY
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
