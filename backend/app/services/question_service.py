@@ -116,8 +116,10 @@ class QuestionService:
     ) -> List[Question]:
         """
         Automatically select questions based on difficulty
-        - If there are easy questions available: select 3 questions (including at least one easy)
-        - If questions are mostly hard/medium: select 2 questions
+        - First randomly select 3 questions with type diversity
+        - Check if selected questions contain easy questions
+        - If contains easy questions: keep 3 questions
+        - If all selected are medium/hard: reduce to 2 questions
         
         Args:
             resume_data: Parsed resume data (reserved)
@@ -132,67 +134,38 @@ class QuestionService:
         if not candidates:
             return []
         
-        # Count difficulty distribution
-        easy_questions = [q for q in candidates if q.difficulty == DifficultyLevel.EASY]
-        medium_questions = [q for q in candidates if q.difficulty == DifficultyLevel.MEDIUM]
-        hard_questions = [q for q in candidates if q.difficulty == DifficultyLevel.HARD]
-        
-        # Determine target count based on difficulty
-        # If there are easy questions, use 3 questions; otherwise use 2
-        target_count = 3 if len(easy_questions) > 0 else 2
-        
+        # Step 1: First select 3 questions with type diversity
         selected = []
         types_used = set()
         
-        # Strategy: Select diverse types, prioritizing easy questions if available
-        if target_count == 3 and easy_questions:
-            # Select 3 questions: try to include at least one easy question
-            random.shuffle(easy_questions)
-            random.shuffle(medium_questions)
-            random.shuffle(hard_questions)
-            
-            # First, try to select one easy question
-            for q in easy_questions:
-                if q.type not in types_used:
-                    selected.append(q)
-                    types_used.add(q.type)
-                    break
-            
-            # Then fill remaining slots with diverse types
-            all_remaining = medium_questions + hard_questions + [q for q in easy_questions if q not in selected]
-            random.shuffle(all_remaining)
-            
-            for q in all_remaining:
-                if len(selected) >= target_count:
-                    break
-                if q.type not in types_used:
-                    selected.append(q)
-                    types_used.add(q.type)
-            
-            # If still not enough, fill randomly
-            all_remaining = [q for q in candidates if q not in selected]
-            random.shuffle(all_remaining)
-            while len(selected) < target_count and all_remaining:
-                selected.append(all_remaining.pop())
-        else:
-            # Select 2 questions (no easy questions available)
-            random.shuffle(candidates)
-            
-            # Try to select diverse types
-            for q in candidates:
-                if len(selected) >= target_count:
-                    break
-                if q.type not in types_used:
-                    selected.append(q)
-                    types_used.add(q.type)
-            
-            # If still not enough, fill randomly
-            remaining = [q for q in candidates if q not in selected]
-            random.shuffle(remaining)
-            while len(selected) < target_count and remaining:
-                selected.append(remaining.pop())
+        # Shuffle for randomness
+        random.shuffle(candidates)
         
-        return selected
+        # Try to select diverse types first
+        for q in candidates:
+            if len(selected) >= 3:
+                break
+            if q.type not in types_used:
+                selected.append(q)
+                types_used.add(q.type)
+        
+        # If not enough diverse types, fill randomly
+        remaining = [q for q in candidates if q not in selected]
+        random.shuffle(remaining)
+        while len(selected) < 3 and remaining:
+            selected.append(remaining.pop())
+        
+        # Step 2: Check if selected questions contain easy questions
+        has_easy = any(q.difficulty == DifficultyLevel.EASY for q in selected)
+        
+        # Step 3: Determine final count based on difficulty
+        if has_easy:
+            # Contains easy questions: keep 3 questions
+            return selected
+        else:
+            # All are medium/hard: reduce to 2 questions
+            # Keep first 2 questions (already shuffled, so random)
+            return selected[:2]
     
     def select_questions_with_resume_jd(
         self,
