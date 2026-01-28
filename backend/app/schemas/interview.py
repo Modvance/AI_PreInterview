@@ -71,7 +71,7 @@ class CreateInterviewRequest(BaseModel):
     position: Optional[str] = None      # Applied position
     resume_data: Optional[dict] = None  # Resume parsed data (reserved)
     jd_data: Optional[dict] = None      # JD parsed data (reserved)
-    question_count: int = Field(default=3, ge=2, le=5)  # Number of questions
+    question_count: Optional[int] = None  # Number of questions (auto-determined if not provided)
 
 
 class InterviewSession(BaseModel):

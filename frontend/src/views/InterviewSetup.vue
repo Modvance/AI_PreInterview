@@ -36,29 +36,6 @@
             />
           </div>
 
-          <!-- 题目数量 -->
-          <div class="mb-8">
-            <label class="block text-sm font-medium text-gray-700 mb-2">
-              题目数量
-            </label>
-            <div class="flex gap-3">
-              <button
-                v-for="num in [2, 3, 4, 5]"
-                :key="num"
-                type="button"
-                @click="form.questionCount = num"
-                :class="[
-                  'flex-1 py-3 rounded-xl font-medium transition-all',
-                  form.questionCount === num
-                    ? 'bg-primary-500 text-white shadow-md'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                ]"
-              >
-                {{ num }} 题
-              </button>
-            </div>
-          </div>
-
           <!-- 提示信息 -->
           <div class="bg-blue-50 rounded-xl p-4 mb-6">
             <div class="flex">
@@ -68,6 +45,7 @@
               <div class="text-sm text-blue-700">
                 <p class="font-medium mb-1">面试说明</p>
                 <ul class="list-disc list-inside space-y-1 text-blue-600">
+                  <li>面试一旦开始，请勿退出界面</li>
                   <li>每道题请选择答案并说明解题思路</li>
                   <li>AI面试官会根据您的回答给予反馈</li>
                   <li>面试结束后会生成详细报告</li>
@@ -116,8 +94,7 @@ const loading = ref(false)
 
 const form = reactive({
   candidateName: '',
-  position: '',
-  questionCount: 3
+  position: ''
 })
 
 const handleStart = async () => {
@@ -127,11 +104,10 @@ const handleStart = async () => {
     // 重置状态
     interviewStore.reset()
     
-    // 创建会话
+    // 创建会话（题目数量由系统自动决定）
     await interviewStore.createSession({
       candidate_name: form.candidateName || null,
-      position: form.position || null,
-      question_count: form.questionCount
+      position: form.position || null
     })
     
     // 跳转到面试页面

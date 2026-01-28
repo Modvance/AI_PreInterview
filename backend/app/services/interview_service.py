@@ -34,18 +34,25 @@ class InterviewService:
         """
         session_id = str(uuid.uuid4())
         
-        # Select questions
-        if request.resume_data or request.jd_data:
-            # Select targeted questions based on resume/JD
-            questions = self.question_service.select_questions_with_resume_jd(
-                count=request.question_count,
+        # Select questions automatically based on difficulty
+        # If question_count is provided, use it; otherwise auto-determine (2 or 3)
+        if request.question_count:
+            # Use provided count
+            if request.resume_data or request.jd_data:
+                questions = self.question_service.select_questions_with_resume_jd(
+                    count=request.question_count,
+                    resume_data=request.resume_data,
+                    jd_data=request.jd_data
+                )
+            else:
+                questions = self.question_service.select_questions_for_interview(
+                    count=request.question_count
+                )
+        else:
+            # Auto-select based on difficulty (2 or 3 questions)
+            questions = self.question_service.auto_select_questions(
                 resume_data=request.resume_data,
                 jd_data=request.jd_data
-            )
-        else:
-            # Default selection
-            questions = self.question_service.select_questions_for_interview(
-                count=request.question_count
             )
         
         session = InterviewSession(
@@ -207,7 +214,7 @@ class InterviewService:
         
         return f"""你好，{name}！欢迎参加{position}的快速面试环节。
 
-我是你的AI面试官。接下来，我将向你展示{session.question_count}道逻辑思维题，请认真阅读题目，选择你认为正确的答案，并简要说明你的解题思路。
+我是你的AI面试官。接下来，我将向你展示{session.question_count}道逻辑思维题，请认真阅读题目，选择你认为正确的答案，并简要说明你的解题思路。如果想不出来，也可以简单写写你的想法。
 
 准备好了吗？让我们开始吧！"""
     
