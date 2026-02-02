@@ -18,6 +18,7 @@ services:
       # 挂载代码目录，实现热重载
       - ./backend/app:/app/app:rw
       - ./backend/data:/app/data:rw
+      - ./backend/validate_questions.py:/app/validate_questions.py:rw
       # 挂载.env文件，方便修改配置
       - ./backend/.env:/app/.env:ro
     restart: unless-stopped

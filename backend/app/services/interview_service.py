@@ -7,7 +7,7 @@ from typing import Dict, Optional, List
 from ..schemas.interview import (
     InterviewSession, InterviewStatus, CreateInterviewRequest,
     SubmitAnswerRequest, AnswerRecord, Question,
-    InterviewReport, AnswerEvaluation
+    InterviewReport, AnswerEvaluation, DifficultyLevel
 )
 from .question_service import get_question_service
 from .ai_service import get_ai_service
@@ -54,6 +54,14 @@ class InterviewService:
                 resume_data=request.resume_data,
                 jd_data=request.jd_data
             )
+        
+        # Sort questions by difficulty: easy -> medium -> hard
+        difficulty_order = {
+            DifficultyLevel.EASY: 1,
+            DifficultyLevel.MEDIUM: 2,
+            DifficultyLevel.HARD: 3
+        }
+        questions = sorted(questions, key=lambda q: difficulty_order.get(q.difficulty, 99))
         
         session = InterviewSession(
             id=session_id,
